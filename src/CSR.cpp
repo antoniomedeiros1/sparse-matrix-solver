@@ -40,8 +40,8 @@ void CSR::readMatrixMarket(std::string filename){
   if (file.is_open()){
     std::string line;
     getline(file, line);
-    std::cout << line[0] << "\n";
-    /* while (line[0] == "%"){ */
+    std::cout << &line[0] << "\n";
+    /* while (&line[0] == "%"){ */
 
     /* } */
   }
