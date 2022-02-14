@@ -10,5 +10,7 @@ int main(int argc, char const *argv[]){
 
   m->readMatrixMarket(filename);
 
+  delete m;
+
   return 0;
 }
