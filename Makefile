@@ -9,12 +9,15 @@ PROJ_NAME = main
 
 # .cpp files
 CPP_SOURCE = ${wildcard ./src/*.cpp}
+C_SOURCE = ${wildcard ./src/*.c}
 
 # .hpp files
 HPP_SOURCE = ${wildcard ./include/*.hpp}
+H_SOURCE = ${wildcard ./include/*.h}
 
 # Object files
 AUX_OBJ = ${subst .cpp,.o,${subst src,objects,${CPP_SOURCE}}}
+AUX_OBJ += ${subst .c,.o,${subst src,objects,${C_SOURCE}}}
 
 # Adds main separately
 CPP_SOURCE += main.cpp
@@ -25,7 +28,7 @@ OBJ = ${filter-out main.o,${AUX_OBJ}}
 CC = g++
 
 # Compiler flags
-CC_FLAGS = -c -O3
+CC_FLAGS = -Wall -g -c -O3 -Iinclude
 
 
 #* Compilation and linking
@@ -36,6 +39,9 @@ ${PROJ_NAME}: ${OBJ}
 	${CC} $^ -o $@
 
 ./objects/%.o: ./src/%.cpp ./include/%.hpp
+	${CC} $< ${CC_FLAGS} -o $@
+
+./objects/%.o: ./src/%.c ./include/%.h
 	${CC} $< ${CC_FLAGS} -o $@
 
 ./objects/main.o: main.cpp ${H_SOURCE}

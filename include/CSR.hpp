@@ -1,23 +1,25 @@
 
+#include "mmio.h"
+#include <fstream>
 #include <iostream>
 #include <string>
-#include <fstream>
 
 class CSR {
 
-  private:
-    int n;          // size of the matrix
-    int nnz;        // number of non-zero values
-    float * AA;     // non zero values
-    int * JA;       // indexes of the column of the element added to AA
-    int * IA;       // position on vector where row starts
-    bool symmetric; // indicates if the matrix is symmetric
+private:
+  int n;          // number of lines and columns
+  int nnz;        // number of non-zero values
+  double *AA;     // non zero values
+  int *JA;        // indexes of the column of the element added to AA
+  int *IA;        // position on vector where row starts
+  bool symmetric; // indicates if the matrix is symmetric
 
-  public:
-    CSR();
-    void initialize(int n, int nnz);
-    ~CSR();
-    void readMatrixMarket(std::string filename);
-    void MatrixVectorCSR(float * v);
-
+public:
+  CSR();
+  ~CSR();
+  void initialize(int n, int nnz);
+  int getSize();
+  void read(const char *file);
+  void MatrixVectorCSR(float *x, float *b);
+  void unitary(float *b);
 };
