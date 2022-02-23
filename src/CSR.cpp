@@ -141,7 +141,7 @@ void CSR::read(const char *file) {
 }
 
 /**
- * @brief set CSR matrix values and initialize vectors
+ * @brief calculates b from A * x
  *
  * @param m matrix of the multiplication
  * @param v vector of real numbers
@@ -161,7 +161,7 @@ void CSR::MatrixVectorCSR(float *x, float *b) {
       j = JA[k];
       b[i] += AA[k] * x[j];
     }
-    std::cout << b[i] << "\n";
+    // std::cout << b[i] << "\n";
   }
 }
 
@@ -208,12 +208,161 @@ void CSR::print() {
   }
 }
 
+float norm(float *vec, int n) {
+  float big = vec[0];
+  for (int i = 1; i < n; i++) {
+    if (vec[i] > big) {
+      big = vec[i];
+    }
+  }
+  return big;
+}
+
+float mult(float *vec1, float *vec2, int n) {
+  float sum = 0;
+  for (int i = 0; i < n; i++) {
+    sum += vec1[i] * vec2[i];
+  }
+  // std::cout << sum << std::endl;
+  return sum;
+}
+
+float sum(float *vec, int n) {
+  float sum = 0;
+  for (int i = 0; i < n; i++) {
+    sum += vec[i];
+  }
+  return sum;
+}
+
 /**
- * @brief multiplies CSR matrix with a vector of ones
+ * @brief finds the solution of the linear system Ax = b where A is the CSR
+ * matrix itself using the optimized gradient algorithm
  *
- * @param m matrix of the multiplication
- * @param v vector of real numbers
+ * @param b         vector of real numbers
+ * @param x         vector with the same size as b representing the solution
+ * @param epsilon   tolerance of the approximation
+ * @param kmax      maximum number of iterations
  *
- * @returns the resultant vector
  */
-void solveSystem() {}
+void CSR::solvebyGradient(float *b, float *x, float epsilon, int kmax) {
+
+  int k;                   // iterations counter
+  float *r = new float[n]; // vector to store the residue | r = b - Ax
+  float *v = new float[n]; // vector used for calculating alpha
+  float alpha;             // paremeter to find next iteration
+
+  // initializes the first solution
+  for (int i = 0; i < n; i++) {
+    x[i] = 0.1;
+  }
+
+  // calculates residue
+  float *Ax = new float[n];
+  this->MatrixVectorCSR(x, Ax);
+  for (int i = 0; i < n; i++) {
+    r[i] = b[i] - Ax[i];
+  }
+
+  for (k = 0; k < kmax; k++) {
+
+    // calculating alpha
+    this->MatrixVectorCSR(r, v);
+    alpha = mult(r, r, n) / mult(v, r, n);
+
+    // calculates next iteration of x
+    for (int i = 0; i < n; i++) {
+      x[i] += alpha * r[i];
+    }
+
+    // std::cout << "k:" << k << "\n";
+    // std::cout << "Solution norm:" << norm(x, n) << "\n";
+    // std::cout << "alpha:" << alpha << "\n";
+    // std::cout << "res:" << norm(r, n) << "\n\n";
+
+    // verifies if tolerance is satisfied
+    if (norm(r, n) < epsilon) {
+      break;
+    }
+
+    // calculates new residue
+    for (int i = 0; i < n; i++) {
+      r[i] -= alpha * v[i];
+    }
+  }
+
+  // prints out the norm of the solution and the number of iterations
+  // for (int i = 0; i < n; i++) {
+  //   std::cout << x[i] << " ";
+  // }
+  // std::cout << "\n";
+  std::cout << "k: " << k << "\n";
+  std::cout << "Solution sum: " << sum(x, n) << "\n";
+}
+
+/**
+ * @brief finds the solution of the linear system Ax = b where A is the CSR
+ * matrix itself using the conjugate gradient method
+ *
+ * @param b         vector of real numbers
+ * @param x         vector with the same size as b representing the solution
+ * @param epsilon   tolerance of the approximation
+ * @param kmax      maximum number of iterations
+ *
+ */
+void CSR::solvebyConjGradient(float *b, float *x, float epsilon, int kmax) {
+
+  int k;                   // iterations counter
+  float *r = new float[n]; // vector to store the residue | r = b - Ax
+  float *p = new float[n]; // vector
+  float rsold, rsnew, e, alpha, beta;
+  float *v = new float[n]; // vector used for calculating alpha
+
+  // initializes the first solution
+  for (int i = 0; i < n; i++) {
+    x[i] = 0.9;
+  }
+
+  // calculates residue
+  float *Ax = new float[n];
+  this->MatrixVectorCSR(x, Ax);
+  for (int i = 0; i < n; i++) {
+    r[i] = b[i] - Ax[i];
+    p[i] = r[i];
+  }
+
+  // calculate rsold
+  rsold = mult(r, r, n);
+  e = sqrt(rsold);
+
+  for (k = 0; k < kmax && e > epsilon; k++) {
+
+    // calculating alpha
+    this->MatrixVectorCSR(p, v);
+    alpha = rsold / mult(v, p, n);
+
+    // calculates next iteration of x
+    for (int i = 0; i < n; i++) {
+      x[i] = x[i] + (alpha * p[i]);
+    }
+
+    // calculates r
+    for (int i = 0; i < n; i++) {
+      r[i] = r[i] - (alpha * v[i]);
+    }
+
+    // calculates p
+    rsnew = mult(r, r, n);
+    e = sqrt(rsnew);
+    beta = rsnew / rsold;
+    for (int i = 0; i < n; i++) {
+      p[i] = r[i] + (beta * p[i]);
+    }
+    rsold = rsnew;
+  }
+
+  // prints out the norm of the solution and the number of iterations
+  std::cout << "k: " << k << "\n";
+  // std::cout << "error: " << e << "\n";
+  std::cout << "Solution sum: " << sum(x, n) << "\n";
+}

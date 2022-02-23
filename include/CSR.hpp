@@ -2,6 +2,7 @@
 #include "mmio.h"
 #include <fstream>
 #include <iostream>
+#include <math.h>
 #include <string>
 
 class CSR {
@@ -23,5 +24,6 @@ public:
   void print();
   void MatrixVectorCSR(float *x, float *b);
   void unitary(float *b);
-  void solva(float *b, float *x);
+  void solvebyGradient(float *b, float *x, float epsilon, int kmax);
+  void solvebyConjGradient(float *b, float *x, float epsilon, int kmax);
 };
