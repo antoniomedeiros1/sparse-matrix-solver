@@ -20,6 +20,8 @@ public:
   void initialize(int n, int nnz);
   int getSize();
   void read(const char *file);
+  void print();
   void MatrixVectorCSR(float *x, float *b);
   void unitary(float *b);
+  void solva(float *b, float *x);
 };

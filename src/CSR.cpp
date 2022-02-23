@@ -1,5 +1,6 @@
 #include "../include/CSR.hpp"
 #include <cstdlib>
+#include <string>
 
 CSR::CSR() {
   // ctor
@@ -64,6 +65,8 @@ void CSR::read(const char *file) {
     exit(1);
   }
 
+  printf("Market Market type: [%s]\n", mm_typecode_to_str(matcode));
+
   /* find out size of sparse matrix .... */
 
   if ((ret_code = mm_read_mtx_crd_size(f, &M, &N, &nz)) != 0)
@@ -87,12 +90,22 @@ void CSR::read(const char *file) {
     tmp[i] = 0;
   }
 
-  for (i = 0; i < nz; i++) {
-    //         row col val
-    fscanf(f, "%d %d %lg\n", &I[i], &J[i], &val[i]);
-    I[i]--; /* adjust from 1-based to 0-based */
-    J[i]--;
-    tmp[I[i]]++; // increases counter of non zeros on row I[i]
+  if (mm_is_symmetric(matcode)) {
+    for (i = 0; i < nz; i++) {
+      //        row col val
+      fscanf(f, "%d %d %lg\n", &I[i], &J[i], &val[i]);
+      I[i]--; /* adjust from 1-based to 0-based */
+      J[i]--;
+      tmp[J[i]]++; // increases counter of non zeros on row I[i]
+    }
+  } else {
+    for (i = 0; i < nz; i++) {
+      //        row col val
+      fscanf(f, "%d %d %lg\n", &I[i], &J[i], &val[i]);
+      I[i]--; /* adjust from 1-based to 0-based */
+      J[i]--;
+      tmp[I[i]]++; // increases counter of non zeros on row I[i]
+    }
   }
 
   if (f != stdin)
@@ -113,11 +126,17 @@ void CSR::read(const char *file) {
   this->IA[0] = 0;
   for (int i = 1; i <= M; i++) {
     this->IA[i] = this->IA[i - 1] + tmp[i - 1];
+    // std::cout << this->IA[i] << " ";
+  }
+  // std::cout << "\n";
+
+  for (int i = 0; i <= nz; i++) {
+    // std::cout << this->AA[i] << " ";
   }
 
   free(I);
-  free(J);
-  free(val);
+  // free(J);
+  // free(val);
   // delete[] tmp;
 }
 
@@ -138,11 +157,11 @@ void CSR::MatrixVectorCSR(float *x, float *b) {
     // std::cout << jstart << "\n";
     jend = IA[i + 1] - 1;
     b[i] = 0.0;
-    for (int k = jstart; k < jend; k++) {
+    for (int k = jstart; k <= jend; k++) {
       j = JA[k];
       b[i] += AA[k] * x[j];
     }
-    // std::cout << b[i] << "\n";
+    std::cout << b[i] << "\n";
   }
 }
 
@@ -164,3 +183,37 @@ void CSR::unitary(float *b) {
 
   this->MatrixVectorCSR(ones, b);
 }
+
+std::string repeat(std::string s, int n) {
+  std::string repeat;
+
+  for (int i = 0; i < n; i++)
+    repeat += s;
+
+  return repeat;
+}
+
+void CSR::print() {
+
+  int i, j;
+
+  for (i = 1; i < this->n; i++) {
+    for (j = this->IA[i - 1]; j < this->IA[i]; j++) {
+      // std::cout << this->AA[j] << " "
+      //           << repeat("0 ", this->JA[j + 1] - this->JA[j] - 1);
+      std::cout << this->AA[j] << " ";
+    }
+    // std::cout << repeat("0 ", this->n - j) << "\n";
+    std::cout << "\n";
+  }
+}
+
+/**
+ * @brief multiplies CSR matrix with a vector of ones
+ *
+ * @param m matrix of the multiplication
+ * @param v vector of real numbers
+ *
+ * @returns the resultant vector
+ */
+void solveSystem() {}

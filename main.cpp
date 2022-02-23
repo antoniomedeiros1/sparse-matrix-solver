@@ -9,16 +9,19 @@ int main(int argc, char const *argv[]) {
   CSR *m = new CSR();
   const char *filename = argv[1];
 
+  // reading Matrix Market and storing into CSR object
   m->read(filename);
+  // m->print();
 
+  // initializes b vector
   b = new float[m->getSize()];
 
+  // multiplication of the CSR matrix and vector of ones
   m->unitary(b);
 
-  // for (int i = 0; i < m->getSize(); i++) {
-  //   cout << b[i] << " ";
-  // }
-  // cout << "\n";
+  // conjugado
+
+  // com pre-condicionamento
 
   return 0;
 }
