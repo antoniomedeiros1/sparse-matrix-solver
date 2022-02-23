@@ -26,4 +26,5 @@ public:
   void unitary(float *b);
   void solvebyGradient(float *b, float *x, float epsilon, int kmax);
   void solvebyConjGradient(float *b, float *x, float epsilon, int kmax);
+  void solvebyConjGradientPreCond(float *b, float *x, float epsilon, int kmax);
 };

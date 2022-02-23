@@ -65,7 +65,7 @@ void CSR::read(const char *file) {
     exit(1);
   }
 
-  printf("Market Market type: [%s]\n", mm_typecode_to_str(matcode));
+  // printf("Market Market type: [%s]\n", mm_typecode_to_str(matcode));
 
   /* find out size of sparse matrix .... */
 
@@ -254,7 +254,7 @@ void CSR::solvebyGradient(float *b, float *x, float epsilon, int kmax) {
 
   // initializes the first solution
   for (int i = 0; i < n; i++) {
-    x[i] = 0.1;
+    x[i] = 0.5;
   }
 
   // calculates residue
@@ -297,7 +297,7 @@ void CSR::solvebyGradient(float *b, float *x, float epsilon, int kmax) {
   // }
   // std::cout << "\n";
   std::cout << "k: " << k << "\n";
-  std::cout << "Solution sum: " << sum(x, n) << "\n";
+  std::cout << "Solution sum: " << sum(x, n) << "\n\n";
 }
 
 /**
@@ -320,7 +320,7 @@ void CSR::solvebyConjGradient(float *b, float *x, float epsilon, int kmax) {
 
   // initializes the first solution
   for (int i = 0; i < n; i++) {
-    x[i] = 0.9;
+    x[i] = 0.5;
   }
 
   // calculates residue
@@ -363,6 +363,89 @@ void CSR::solvebyConjGradient(float *b, float *x, float epsilon, int kmax) {
 
   // prints out the norm of the solution and the number of iterations
   std::cout << "k: " << k << "\n";
-  // std::cout << "error: " << e << "\n";
-  std::cout << "Solution sum: " << sum(x, n) << "\n";
+  std::cout << "error: " << e << "\n";
+  std::cout << "Solution sum: " << sum(x, n) << "\n\n";
+}
+
+/**
+ * @brief solves the linear system Ax = b usin the conjugate gradient method
+ * with preconditioner (Jacobi preconditioner)
+ *
+ * @param b         vector of real numbers
+ * @param x         vector with the same size as b representing the solution
+ * @param epsilon   tolerance of the approximation
+ * @param kmax      maximum number of iterations
+ *
+ */
+void CSR::solvebyConjGradientPreCond(float *b, float *x, float epsilon,
+                                     int kmax) {
+
+  int k;                   // iterations counter
+  float *r = new float[n]; // vector to store the residue | r = b - Ax
+  float *M = new float[n]; // stores the inverse diagonal of A
+  float *p = new float[n]; // vector
+  float *z = new float[n]; // vector
+  float rzold, rznew, e, alpha, beta;
+  float *v = new float[n]; // vector used for calculating alpha
+  float val;
+
+  // calculates M
+  for (int i = 0; i < n; i++) {
+    val = this->AA[IA[i] + i];
+    M[i] = abs(val) > 0.0 ? 1 / val : 0.0;
+  }
+
+  // initializes the first solution
+  for (int i = 0; i < n; i++) {
+    x[i] = 0.5;
+  }
+
+  // calculates residue
+  float *Ax = new float[n];
+  this->MatrixVectorCSR(x, Ax);
+  for (int i = 0; i < n; i++) {
+    r[i] = b[i] - Ax[i];
+  }
+
+  // calculate z
+  for (int i = 0; i < n; i++) {
+    z[i] = M[i] * r[i];
+    p[i] = z[i];
+  }
+
+  // calculate rzold
+  rzold = mult(r, z, n);
+  e = sqrt(abs(rzold));
+
+  for (k = 0; k < kmax && e > epsilon; k++) {
+
+    // calculating alpha
+    this->MatrixVectorCSR(p, v);
+    alpha = rzold / mult(v, p, n);
+
+    // calculates next iteration of x, r and z
+    for (int i = 0; i < n; i++) {
+      x[i] = x[i] + (alpha * p[i]);
+      r[i] = r[i] - (alpha * v[i]);
+      z[i] = M[i] * r[i];
+    }
+
+    // calculates beta
+    rznew = mult(r, z, n);
+    beta = rznew / rzold;
+    e = sqrt(abs(rznew));
+    // std::cout << "e: " << e << "\n";
+
+    // calculates p
+    for (int i = 0; i < n; i++) {
+      p[i] = z[i] + (beta * p[i]);
+    }
+
+    rzold = rznew;
+  }
+
+  // prints out the norm of the solution and the number of iterations
+  std::cout << "k: " << k << "\n";
+  std::cout << "error: " << e << "\n";
+  std::cout << "Solution sum: " << sum(x, n) << "\n\n";
 }

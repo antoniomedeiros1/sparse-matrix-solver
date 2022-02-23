@@ -20,9 +20,12 @@ int main(int argc, char const *argv[]) {
   m->unitary(b);
 
   // Parte 2
-  float epsilon = 0.01;
-  int kmax = 100;
+  int kmax = atoi(argv[2]);
+  float epsilon = atof(argv[3]);
   float *x = new float[m->getSize()];
+
+  cout << "\ninstance: " << filename << "\nkmax = " << kmax
+       << "; tol = " << epsilon << "\n";
 
   // método dos gradientes
   cout << "Método dos gradientes:\n";
@@ -33,6 +36,8 @@ int main(int argc, char const *argv[]) {
   m->solvebyConjGradient(b, x, epsilon, kmax);
 
   // com pre-condicionamento
+  cout << "Método dos gradientes conjugado com pre-condicionamento:\n";
+  m->solvebyConjGradientPreCond(b, x, epsilon, kmax);
 
   return 0;
 }

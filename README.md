@@ -16,23 +16,31 @@ para armazenar as mesmas e facilitar as operações de multiplicação matriz po
 # Instruções
 Compilação por meio do Makefile utilizando o comando `make`.
 
-Para executar o programa deve ser indicado o caminho para o arquivo da matriz. Exemplo:
+Para executar o programa deve ser indicado o caminho para o arquivo da matriz, seguido do máximo de iterações e da tolernância. Exemplo:
 ``` 
-./main instances/1138_bus.mtx
+./main instances/1138_bus.mtx 1000 0.001
 ```
 
 # Resultados
-Foram implementados os métodos dos Gradientes otimizado e o método de Gradientes Conjugados, observando,
-para cada instância, a soma dos elementos da solução, que deveria convergir para para a dimensão da matriz.
+Foram implementados os métodos dos Gradientes otimizado e o método de Gradientes Conjugados com 
+e sem precondicionamento, observando para cada instância o resíduo final após uma certa quantidade
+de iterações.
 
-A tabela a seguir apresenta os resultados de cada método para cada instância.
+A tabela a seguir apresenta a soma do vetor solução de cada método para cada instância, 
+que em teoria deve convergir para a dimensão da matriz, considerando um máximo de 100 iterações,
 
-Instância | Esperado | Gradiente Otimizado | Gradiente Conjugado
---- | --- | --- | --- 
-bcsstk01 | 48 | 27 | 47
-1138_bus | 1138 | 449 | 1106
+Instância | Esperado | Gradiente Otimizado | Gradiente Conjugado | G.C com Precondicionamento
+--- | --- | --- | --- | ---
+bcsstk01 | 48 | 36.4652 | 46.7096 | 42.1113
+1138_bus | 1138 | 755.348 | 982.65 | 626.621
+
+Para verificar a rapidez na convergência para os casos sem e com precondicionador, foi executado a instância
+1138_bus para diferentes valores de kmax. Os resultados podem ser observados no gráfico:
+
+![grafico](https://drive.google.com/uc?export=view&id=1wyFfGy9K3zWeOFsBiCqR1Ya-JL-8Qmdl)
 
 
 # Referências
-![https://sparse.tamu.edu/]
-![https://math.nist.gov/MatrixMarket/mmio-c.html]
+https://sparse.tamu.edu/
+
+https://math.nist.gov/MatrixMarket/mmio-c.html
